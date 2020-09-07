@@ -1,1 +1,14 @@
 All Maps
+<h2> Search Maps</h2>
+<form action = "/maps" method = "GET">
+    <label>Name</label>
+    <input type = "text" name = "name" value = "<%= searchOptions.name %>">
+    <button type = "submit"> Search </button>
+</form>
+<br>
+<% maps.forEach(map => { %>
+    <div><%= map.name%></div>
+    <a href = "/maps/<%= map.id %>"> View</a>
+    <!-- <a href = "/maps/<%= map.id %>/edit"> View</a>
+    <a href = "/maps/<%= map.id %>"> Delete</a> -->
+<% }) %>

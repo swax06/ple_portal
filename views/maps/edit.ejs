@@ -1,0 +1,6 @@
+<h2> Edit Map</h2>
+<form action = "/maps/<%= map.id %>?_method=PUT" method = "POST">
+    <%- include('_formFields') %>
+    <a href = "/maps"> Cancel</a>
+    <button type = "submit"> Update </button>
+</form>
