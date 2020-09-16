@@ -1,24 +1,24 @@
 ﻿id,resource_id,x,y,tags,seq_id,zoom
-1,The 1st world war,223.7446993,142.7273712,Nationalism in india,1,1
-1,Khalifat movement,225.137581,163.7488708,Nationalism in india,2,2
-1,Non-Coperation movement,277.5668846,117.4662933,Nationalism in india,3,3
-1,Chauri Chaura,242.5222215,89.34230042,Nationalism in india,4,4
-1,Civil Disobediance movement,225.6855301,121.9862671,Nationalism in india,5,1
-1,Salt Movement,227.1574043,166.587738,Nationalism in india,6,2
-1,Sense of collective belonging,239.5338328,103.6868591,Nationalism in india,7,3
-2,Emerging from Shadow of China,215.742295,10.9152298,Indo - China,1,4
-2,Colonial Education,190.8606602,201.9928589,Indo - China,2,1
-2,Hygiene Diesease,190.3189242,3.988462448,Indo - China,3,2
-2,The Rat Hunt,192.9512163,116.0960236,Indo - China,4,3
-2,Religion and Anti-Colonialism,207.7107699,92.78785706,Indo - China,5,4
-2,The Vision of Modernisation,190.3189242,95.3927002,Indo - China,6,1
-2,The Communist Movement,190.3189242,124.9051666,Indo - China,7,2
-3,The First Printed Books,225.670485,140.0221863,Print Culture and Modern World,1,3
-3,Print Comes to Europe,213.3475747,21.13407326,Print Culture and Modern World,2,4
-3,The Print Revolution and its Impacts,245.8148408,62.34641266,Print Culture and Modern World,3,1
-3,The Reading Mania,212.1653111,11.43700504,Print Culture and Modern World,4,2
-3,The 19th Century,212.1653111,29.68688583,Print Culture and Modern World,5,3
-3,India and the World of Print,212.1653111,51.95367432,Print Culture and Modern World,6,4
-3,Religious Reforms and Public Debates,212.1653111,20.88886833,Print Culture and Modern World,7,1
-3,New Forms of Publications,318.2280363,27.48040009,Print Culture and Modern World,8,2
-3,Print and Censorship,203.9382331,25.42506027,Print Culture and Modern World,9,3
+1,The 1st world war,223.7446993,142.7273712,Nationalism in india,1,1.1
+1,Khalifat movement,225.137581,163.7488708,Nationalism in india,2,1.2
+1,Non-Coperation movement,277.5668846,117.4662933,Nationalism in india,3,1.3
+1,Chauri Chaura,242.5222215,89.34230042,Nationalism in india,4,1.4
+1,Civil Disobediance movement,225.6855301,121.9862671,Nationalism in india,5,1.1
+1,Salt Movement,227.1574043,166.587738,Nationalism in india,6,1.2
+1,Sense of collective belonging,239.5338328,103.6868591,Nationalism in india,7,1.3
+2,Emerging from Shadow of China,215.742295,10.9152298,Indo - China,1,1.4
+2,Colonial Education,190.8606602,201.9928589,Indo - China,2,1.1
+2,Hygiene Diesease,190.3189242,3.988462448,Indo - China,3,1.2
+2,The Rat Hunt,192.9512163,116.0960236,Indo - China,4,1.3
+2,Religion and Anti-Colonialism,207.7107699,92.78785706,Indo - China,5,1.4
+2,The Vision of Modernisation,190.3189242,95.3927002,Indo - China,6,1.1
+2,The Communist Movement,190.3189242,124.9051666,Indo - China,7,1.2
+3,The First Printed Books,225.670485,140.0221863,Print Culture and Modern World,1,1.3
+3,Print Comes to Europe,213.3475747,21.13407326,Print Culture and Modern World,2,1.4
+3,The Print Revolution and its Impacts,245.8148408,62.34641266,Print Culture and Modern World,3,1.1
+3,The Reading Mania,212.1653111,11.43700504,Print Culture and Modern World,4,1.2
+3,The 19th Century,212.1653111,29.68688583,Print Culture and Modern World,5,1.3
+3,India and the World of Print,212.1653111,51.95367432,Print Culture and Modern World,6,1.4
+3,Religious Reforms and Public Debates,212.1653111,20.88886833,Print Culture and Modern World,7,1.1
+3,New Forms of Publications,318.2280363,27.48040009,Print Culture and Modern World,8,1.2
+3,Print and Censorship,203.9382331,25.42506027,Print Culture and Modern World,9,1.3
