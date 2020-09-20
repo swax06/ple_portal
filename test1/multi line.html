@@ -1,0 +1,427 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v5.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<!-- Initialize a select button -->
+<select id="selectButton"></select>
+
+<!-- Color Scale -->
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<!-- <script src="d3-tip.js"></script> -->
+<style>
+.labelTest {
+  pointer-events: none;
+}
+.label_path {
+  pointer-events: none;
+}
+.tooltip {
+  pointer-events: none;
+}
+/* circle {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+} */
+
+</style>
+
+<script>
+// 
+// set the dimensions and margins of the graph
+var margin = {top: 30, right: 30, bottom: 30, left: 30},
+    width = 700 - margin.left - margin.right,
+    height = 550 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// var svg1 = d3.select("#my_dataviz")
+//   .append("svg")
+//   .attr("width", width)
+//   .attr("height", height)
+//   .call(d3.zoom().on("zoom", function () {
+//               svg.attr("transform", d3.event.transform)
+//       }))
+//   .append("g")
+//     .attr("transform",
+//           "translate(" + 0 + "," +0 + ")");
+
+var tlist = []
+var tlist1 = []
+var grx = 0, gry = 0, gsx = 999999, gsy = 999999
+var rx = 0, ry = 0, sx = 999999, sy = 999999
+var allGroup = []
+allGroup.push("All Paths")
+var clickFlag = false;
+var i = 0
+var time = 0
+var idx
+var dataReady = [], dataFilter = []
+var tdata = []
+var cFilter = []
+var temp
+var all = true
+
+Promise.all([
+    d3.csv("https://raw.githubusercontent.com/swax06/ple_portal/master/results/nlp_maps/cmaps/resources.csv"),
+    d3.csv("https://raw.githubusercontent.com/swax06/ple_portal/master/results/nlp_maps/pathways/nlp_manual_pathways.csv"),  
+]).then(function(data) {
+  var str = data[1][0].Pathway_ID
+  while (i < data[0].length) {
+    grx = Math.max(grx, data[0][i].X)
+    gry = Math.max(gry, data[0][i].Y)
+    gsx = Math.min(gsx, data[0][i].X)
+    gsy = Math.min(gsy, data[0][i].Y)
+    if(i === data.length - 1) {
+      tlist.push({x_coord: data[0][i].X, y_coord: data[0][i].Y, chapter: data[0][i].resource_id, sequence: data[1][i].sequence_id, zoom: data[0][i].zoom, pathway_LOD: data[1][i].Pathway_LOD})
+      tlist1.push({x_coord: "-1000", y_coord: "-1000", chapter: "", sequence: data[1][i].sequence_id, zoom: data[0][i].zoom, pathway_LOD: data[1][i].Pathway_LOD})
+    }
+    if(data[1][i].Pathway_ID !== str || i === data[0].length - 1) {
+      allGroup.push(str)
+      temp = {
+        name: str,
+        values: tlist
+      }
+      dataReady.push(temp)
+      temp = {
+        name: str,
+        values: tlist1
+      }
+      tdata.push(temp)
+      str = data[1][i].Pathway_ID
+      tlist = []
+      tlist1 = []
+    }
+    tlist.push({x_coord: data[0][i].X, y_coord: data[0][i].Y, chapter: data[0][i].resource_id, sequence: data[1][i].sequence_id, zoom: data[0][i].zoom, pathway_LOD: data[1][i].Pathway_LOD})
+    tlist1.push({x_coord: "-1000", y_coord: "-1000", chapter: "", sequence: data[1][i].sequence_id, zoom: data[0][i].zoom, pathway_LOD: data[1][i].Pathway_LOD})
+    i++
+  }
+
+console.log(gsx)
+
+    d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(allGroup)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("values", function (d) { return d; }) // corresponding value returned by the button
+    // console.log(dataReady)
+
+    // A color scale: one color for each group
+    var myColor = d3.scaleOrdinal()
+      .domain(allGroup)
+      .range(d3.schemeSet2);
+
+   // Add X Axis
+    var x = d3.scaleLinear().range([ 0, width ])
+    var xAxis = svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      
+
+    // Add Y axis
+    var y = d3.scaleLinear().range([ height, 0 ])
+    var yAxis = svg.append("g")
+
+    // Add a clipPath: everything out of this area won't be drawn. 
+    var clip = svg.append("defs").append("svg:clipPath")
+      .attr("id", "clip")
+      .append("svg:rect")
+      .attr("width", width )
+      .attr("height", height )
+      .attr("x", 0)
+      .attr("y", 0);
+
+    var zoom = d3.zoom()
+      .scaleExtent([.8, 20])  // This control how much you can zoom-out (x0.5) and zoom-in (x10)
+      .extent([[0, 0], [width, height]])
+      .on("zoom", updateChart);
+
+    // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
+    var gElem = svg.append("g").call(zoom);
+    gElem
+      .append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .style("fill", "none")
+      .style("pointer-events", "all")
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+    function updateAxis(newX, newY, ti) {
+      // console.log(ti)
+      xAxis
+      .transition()
+      .duration(ti)
+      .call(d3.axisBottom(newX));
+      yAxis
+      .transition()
+      .duration(ti)
+      .call(d3.axisLeft(newY));
+    }
+
+    function updateChart() {
+      // recover the new scale
+      var newX = d3.event.transform.rescaleX(x);
+      var newY = d3.event.transform.rescaleY(y);
+      var z = (x.domain()[1] - x.domain()[0]) / (newX.domain()[1] - newX.domain()[0])
+      // updateAxis(newX, newY, 500);
+      xAxis
+      .call(d3.axisBottom(newX));
+      yAxis
+      .call(d3.axisLeft(newY));
+      //console.log(zoom);
+
+      var lines = svg.selectAll(".lineTest")
+      var sel = d3.line()
+        .x(function(d) { return newX(d.x_coord) })
+        .y(function(d) { return newY(d.y_coord) })
+
+      lines
+          .attr("d", function(d){ return sel(d.values) })
+          .attr("fill", "none")
+          .attr("stroke", function(d){ t = d.values[0].pathway_LOD - 0.5; if(!all || (z > 6 || z - 1 <= t && z > t)) return myColor(d.name); else return "grey";})
+          .attr("stroke-width", 3)
+          .style("opacity", function(d){ t = d.values[0].pathway_LOD - 0.5; if(!all || (z > 6 || z - 1 <= t && z > t)) return 1; else return 0.1;})
+
+      var labels = svg.selectAll(".labelTest")
+      labels
+        .attr("dx", function(d) { return newX(d.x_coord) } )
+        .attr("dy", function(d) { return newY(d.y_coord) } )
+        .text(function(d) { if(all && z - 4 <= (d.zoom - 1) * 2) return ""; return d.chapter; })
+        .style("font-size", function(d){if(all) return String(z + 1); return String(8 + 2*z)})
+
+      var dots = svg.selectAll(".myDots")
+        dots
+          .attr("cx", function(d) { return newX(d.x_coord) } )
+          .attr("cy", function(d) { return newY(d.y_coord) } )
+          .attr("r", function(d) { if(all && z < 6) return 0; return 4;})
+          //.style("opacity", function(d) { if(all && z < 6) return 0; return 0.8;})
+
+      if(all === true){
+        var labels_path = svg.selectAll(".label_path")
+        labels_path
+          .attr("dx", function(d) { t = d.values[0].pathway_LOD - 0.5; if(z - 1 <= t && z > t) return newX(d.values[d.values.length - 1].x_coord); else return "-1000"; })
+          .attr("dy", function(d) { t = d.values[0].pathway_LOD - 0.5; if(z - 1 <= t && z > t) return newY(d.values[d.values.length - 1].y_coord); else return "-1000"; })
+      }
+    }
+
+    // A function that update the chart
+    function update(selectedGroup) {
+
+      gElem.transition()
+          .duration(500)
+          .call(zoom.transform, d3.zoomIdentity);
+
+      dataFilter = []
+      cFilter = []
+      var idx = allGroup.findIndex(x => x === selectedGroup)
+      if(idx === 0) {
+        dataFilter = dataReady
+        rx = grx, ry = gry, sx = gsx, sy = gsy
+        all = true;
+      }
+      else {
+        dataFilter = tdata.slice()
+        dataFilter[idx - 1] = dataReady[idx - 1]
+        sx = d3.min(dataFilter[idx - 1].values, function(d) { return +d.x_coord })
+        rx = d3.max(dataFilter[idx - 1].values, function(d) { return +d.x_coord })
+        sy = d3.min(dataFilter[idx - 1].values, function(d) { return +d.y_coord })
+        ry = d3.max(dataFilter[idx - 1].values, function(d) { return +d.y_coord })
+        all = false;
+      }
+      for(var k = 0; k < dataFilter.length; k++) {
+        cFilter = cFilter.concat(dataFilter[k].values)
+      }  
+      x.domain([sx - 15, rx + 30]);
+      y.domain([sy - 15, ry + 15]);
+      
+      updateAxis(x, y, time);
+
+      var lines = svg.selectAll(".lineTest")
+      var sel = d3.line()
+        .x(function(d) { return x(d.x_coord) })
+        .y(function(d) { return y(d.y_coord) })
+      
+      lines
+        .data(dataFilter)
+        .enter()
+        .append("path")
+        .attr("class","lineTest")
+        .attr("clip-path", "url(#clip)")
+        .merge(lines)
+        .transition()
+        .duration(time)
+        .attr("d", function(d){ return sel(d.values) })
+        // .attr("fill", "none")
+          // .attr("stroke", function(d){ if(d.values[0].pathway_LOD === "1") return myColor(d.name); else return "gray"; })
+          //.attr("stroke", function(d){ return myColor(d.name)})
+          // .attr("stroke-width", 3)
+
+      //Add a legend at the end of each line
+      // var labels = svg.selectAll(".labelTest")
+      var labels_path = svg.selectAll(".label_path")
+
+      labels_path
+        .data(dataFilter)
+        .enter()
+          .append("text")
+          .attr("class","label_path")
+          .attr("clip-path", "url(#clip)")
+          .merge(labels_path)
+          .transition()
+          .duration(time)
+          .attr("dx", function(d) {if(!all) {if(d.values[0].x_coord != "-1000") return "480";} else if(d.values[0].pathway_LOD != 1){ return "-1000"} return x(d.values[d.values.length - 1].x_coord) } )
+          .attr("dy", function(d) {if(!all) {if(d.values[0].y_coord != "-1000") return "200";} else if(d.values[0].pathway_LOD != 1){ return "-1000"} return y(d.values[d.values.length - 1].y_coord) } )
+          .attr("x", 30) // shift the text a bit more right
+          .attr("font-weight", 600)
+          //.attr("y", 20)
+          .text(function(d) {return d.name;})
+          .style("fill", function(d){ return myColor(d.name) })
+          .style("font-size", "15")
+
+      var labels = svg.selectAll(".labelTest")
+
+      labels
+        .data(cFilter)
+        .enter()
+        .append("text")
+        .attr("class", "labelTest")
+        .attr("clip-path", "url(#clip)")
+        .merge(labels)
+        .transition()
+        .duration(time)
+        .attr("dx", function(d) { return x(d.x_coord) } )
+        .attr("dy", function(d) { return y(d.y_coord) } )
+        .attr("x", 20) // shift the text a bit more right
+        //.text(function(d) { if(selectedGroup !== "All Paths") return ""; else return ""; })
+        .style("fill", function(d){ return myColor(d.zoom) })
+        //.style("font-size", "12")
+
+      
+        
+        
+      var dots = svg.selectAll(".myDots")
+      
+      dots
+        .data(cFilter)
+        .enter()
+        .append("circle")
+        .attr("class", "myDots")
+        .attr("clip-path", "url(#clip)")
+        .merge(dots)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave)
+        // .on('click', function(d){
+        //   if(clickFlag){
+        //       tip.hide(d);  
+        //     }else{
+        //       tip.show(d);  
+        //     }
+        //     return clickFlag = !clickFlag;
+        // })
+        .transition()
+        .duration(time)
+        .attr("cx", function(d) { return x(d.x_coord) } )
+        .attr("cy", function(d) { return y(d.y_coord) } )
+        .attr("r", function(d){if(all) return 0; return 4;})
+        .style("fill", "#606060")
+        .style("stroke-width", "5px")
+
+
+      time = 1000
+    }
+
+    
+
+    // var tip = d3.tip()
+    //   .attr('class', 'd3-tip')
+    //   .offset([50, 500])
+    //   .attr("class", "tooltip")
+    //   .html(function(d) {
+    //     return "Step no.: " +  d.sequence +
+    //     "<br>Topic: " + d.chapter +
+    //     "<br>Resources: "  + 
+    //     "<br>  res1: " + "D3 selection tutorial".link("https://www.youtube.com/watch?v=lxrspd3s6uU&list=PLm9IrDsFzc_myJaf_CFFIMi6l0mbp2FMW");
+    //   });
+
+    //svg.call(tip);
+
+    // create a tooltip
+    var Tooltip = d3.select("#my_dataviz")
+        .append("div")
+        .style("position", "absolute")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "#FFFFFF")
+        //.style("border-color", "#E5E5E5")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "2px")
+        .style("padding", "5px")
+
+      // Three function that change the tooltip when user hover / move / leave a cell
+      var mouseover = function(d) {
+        Tooltip
+          .style("opacity", 1)
+        d3.select(this)
+          .style("stroke", "#606060")
+          .style("opacity", 0.8)
+      }
+      var mousemove = function(d) {
+        Tooltip
+          .html(
+            "Topic: " + d.chapter +
+            "<br>Serial no.: " +  d.sequence +
+            "<br>Exact Coordinates"    +
+            "<br>   X: "  + d.x_coord  + 
+            "<br>  Y: "  + d.y_coord 
+            //"<button id='but1'>Button 1</button><button  id='but2'>Button 2</button>"
+          )
+          .style("left", (d3.mouse(this)[0]+70) + "px")
+          .style("top", (d3.mouse(this)[1]) + "px")
+
+      }
+      var mouseleave = function(d) {
+        Tooltip
+          .style("opacity", 0)
+        d3.select(this)
+          .style("stroke", "none")
+          .style("opacity", 0.8)
+      }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButton").on("change", function(d) {
+      // recover the option that has been chosen
+      var selectedOption = d3.select(this).property("value")
+      // run the updateChart function with this selected option
+      update(selectedOption)
+    })
+
+    update("All Paths")
+  })
+  // .catch(function(err) {
+  //       // handle error here
+  //       console.log("Error reading data")
+  //   })
+
+</script>
+
